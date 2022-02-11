@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conway Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+</head>
+<body x-data="data()">
+    <div class="p-8">
+        <div class="">
+            <label for="" class="">Columns</label>
+            <input type="number" class="w-16 px-2 py-1 rounded bg-gray-50 border" x-model="cols" @change="createGrid()">
+            <label for="" class="ml-4">Cell Size</label>
+            <input type="number" class="w-16 px-2 py-1 rounded bg-gray-50 border" x-model="cellSize">
+            <button class="ml-4 bg-blue-500 text-white rounded px-2 py-1" @click="seed()">Seed Life</button>
+            <button class="ml-4 bg-black text-white rounded px-2 py-1" @click="nextGeneration()">Next Generation</button>
+            <button class="ml-4 bg-green-500 text-white rounded px-2 py-1" @click="autoGenerate()" x-text="isRunning ? 'Stop' : 'Start'" :class="isRunning ? 'bg-red-500' : 'bg-green-500'"></button>
+            <button class="ml-4 bg-red-500 text-white rounded px-2 py-1" @click="clearGrid()">Reset</button>
+            <label x-text="generation"></label>
+        </div>
+        <div class="grid w-max mt-16" :style="`grid-template-columns: repeat(${cols}, minmax(0, 1fr));`">
+            <template x-for="cell in grid">
+                <div class="border border-gray-300 cursor-pointer" :class="[`h-${cellSize} w-${cellSize}`, cell.alive ? 'bg-black' : '']" @click="cell.alive = !cell.alive"></div>
+            </template>
+        </div>
+    </div>
+    <script>
+        function data(){
+            return {
+                init(){
+                    this.createGrid();
+                },
+                cols: 10,
+                cellSize: 10,
+                grid: [],
+                createGrid(){
+                    this.grid = [];
+                    for (let i = 0; i < this.cols; i++) {
+                        for(let j = 0; j < this.cols; j++){
+                            this.grid.push(
+                                { row: i, col: j, alive: false }
+                            )
+                        }
+                    }
+                },
+
+                chance: 20,
+                seed(){
+                    this.grid.forEach(cell => {
+                        cell.alive = Math.random() < this.chance / 100;
+                    })
+                },
+                clearGrid(){
+                    this.grid.forEach( cell => {
+                        cell.alive = false;
+                    })
+                    this.generation = 0;
+                },
+
+                generation: 0,
+                nextGeneration(){
+                    this.generation++;
+
+                    this.grid.forEach( cell => {
+                        let aliveNeighbours = this.getAliveNeighbours(cell);
+                        if(cell.alive){
+                            cell.nextGen = !(aliveNeighbours < 2 || aliveNeighbours > 3)
+                        } else {
+                            cell.nextGen = aliveNeighbours == 3;
+                        }
+                    });
+                    this.grid.forEach( cell => {
+                        cell.alive = cell.nextGen;
+                    })
+                },
+                getAliveNeighbours(_cell){
+                    let aliveNeighboursCount = 0;
+                    for(i = -1; i < 2; i++){
+                        for(j = -1; j < 2; j++){
+                            if(i == 0 && j == 0) continue; // It is the cell itself.
+                            found = this.findCell(_cell.row + i, _cell.col + j);
+                            if(found && found.alive){
+                                aliveNeighboursCount++;
+                            }
+                        }
+                    }
+                    return aliveNeighboursCount;
+                },
+                findCell(_row, _col){
+                    return this.grid[_row * this.cols + _col];
+                },
+                interval: null,
+                isRunning: false,
+                autoGenerate(){
+                    $this = this;
+                    if(!this.isRunning){
+                        this.interval = setInterval(function(){
+                            $this.nextGeneration();
+                        }, 100);
+                    } else {
+                        clearInterval(this.interval)
+                    }
+                    this.isRunning = !this.isRunning;
+                },
+
+            };
+        }
+    </script>
+</body>
+</html>
