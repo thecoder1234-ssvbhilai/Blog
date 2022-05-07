@@ -94,17 +94,17 @@
                 },
                 interval: null,
                 isRunning: false,
-                // autoGenerate(){
-                //     $this = this;
-                //     if(!this.isRunning){
-                //         this.interval = setInterval(function(){
-                //             $this.nextGeneration();
-                //         }, 100);
-                //     } else {
-                //         clearInterval(this.interval);
-                //     }
-                //     this.isRunning = !this.isRunning;
-                // },
+                autoGenerate(){
+                    $this = this;
+                    if(!this.isRunning){
+                        this.interval = setInterval(function(){
+                            $this.nextGeneration();
+                        }, 100);
+                    } else {
+                        clearInterval(this.interval);
+                    }
+                    this.isRunning = !this.isRunning;
+                },
 
             };
         }
